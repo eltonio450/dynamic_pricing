@@ -26,21 +26,26 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="bin\dassault\__init__.py">
+    <Compile Include="modelization\dassault\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="bin\engine\State.py">
+    <Compile Include="modelization\engine\custom_build\__init__.py" />
+    <Compile Include="modelization\engine\Distribution.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="bin\basic_functions.py">
+    <Compile Include="modelization\engine\mdp_tools\__init__.py" />
+    <Compile Include="modelization\engine\State.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="bin\engine\Non_Stochastic_State_Map.py">
+    <Compile Include="modelization\basic_functions.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="bin\engine\__init__.py" />
-    <Compile Include="bin\__init__.py" />
-    <Compile Include="bin\visualization\__init__.py" />
+    <Compile Include="modelization\engine\Non_Stochastic_State_Map.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="modelization\engine\__init__.py" />
+    <Compile Include="modelization\__init__.py" />
+    <Compile Include="modelization\visualization\__init__.py" />
     <Compile Include="configuration\__init__.py" />
     <Compile Include="Model_Testing.py" />
     <Compile Include="constantes.py">
@@ -49,15 +54,20 @@
     <Compile Include="configuration\parameters.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="modelization\engine\Strategy.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="bin\dassault\" />
-    <Folder Include="bin\engine\" />
-    <Folder Include="bin\visualization\" />
+    <Folder Include="modelization\dassault\" />
+    <Folder Include="modelization\engine\" />
+    <Folder Include="modelization\engine\mdp_tools\" />
+    <Folder Include="modelization\engine\custom_build\" />
+    <Folder Include="modelization\visualization\" />
     <Folder Include="configuration\" />
     <Folder Include="test\" />
     <Folder Include="doc\" />
-    <Folder Include="bin\" />
+    <Folder Include="modelization\" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\3.5" />
