@@ -1,6 +1,6 @@
 from collections import Set
 from collections import deque
-from bin.engine.State import State
+from modelization.engine.State import State
 import networkx as nx
 import numpy as np
 import time

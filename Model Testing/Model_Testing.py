@@ -4,8 +4,8 @@ import sys
 
 #sys.path.append('C:\Users\Sauvage_Antoine\Documents\Visual Studio 2015\Projects\Model Testing\Model Testing\') 
 from configuration import parameters as P
-from bin.engine.Non_Stochastic_State_Map import Non_Stochastic_State_Map
-from bin.engine.Distribution import *
+from modelization.engine.Non_Stochastic_State_Map import Non_Stochastic_State_Map
+from modelization.engine.Distribution import *
 
 from collections import deque
 import networkx as nx
