@@ -20,19 +20,30 @@ class Non_Stochastic_State_Map(object):
     def __init__(self, L=10, N=5):
         self.n_states = 0
         self.stateList = []
-
+        self.stateDict = {}
         dictQueues = {}
+
+
         self.generateQueues(L, N, dictQueues)
         
+        #for q in dictQueues[L, N]:
+        #    print(q)
+
         for q in dictQueues[L, N]:
-            self.stateList.append(State(q.popleft(), q))
+            self.stateList.append(State(q))
+
+        print("All the states have been generated.")
+        for i in range(0, len(self.stateList)):
+            self.stateList[i].index = i
+            self.stateDict[self.stateList[i].tuple[1::]] = i
+
 
         self.n_states = len(self.stateList)
         print("Generated states: "+ str(self.n_states))
         
         #optimisation
-        for item in self.stateList:
-            item.index = self.stateList.index(item)
+        #for item in self.stateList:
+            #item.index = self.stateList.index(item)
 
         
         
@@ -41,47 +52,16 @@ class Non_Stochastic_State_Map(object):
         self.authorized_transitions_matrix = self.generateAuthorizedTransitionMatrix()
 
 
-    """ We generate all the possible states in a set, with p=0, in order to avoid doubles. Outdated"""
-    def generateStatesOldVersion(self, L, N):
-        
-        successors_to_be_processed = []   
-        initial_queue = deque()
-
-        """Generation of a (0,0,0,0,0) state"""
-        for i in range(0,L):
-            initial_queue.append(0)
-        initial_state = State(N, initial_queue)
-
-        self.stateList.append(initial_state)
-
-        """Generation of the first successors"""
-        successors_to_be_processed.extend(initial_state.guess_successors())
-           
-
-        while successors_to_be_processed:
-            succ = successors_to_be_processed.pop()
-            
-            if not succ in self.stateList:  
-                successors_to_be_processed.extend(succ.guess_successors())
-                self.stateList.append(succ)
-        self.n_states = len(self.stateList)
-        print("Generated states: "+ str(self.n_states))
-        
-        #optimisation
-        for item in self.stateList:
-            item.index = self.stateList.index(item)
-
     def generateQueues(self, L, N, dict):
         if (L,N) not in dict.keys():
             if L == 1:
-                dict[L,N] = [deque([N])]
+                dict[L,N] = [(N,)]
             else:
                 dict[L,N] = []
                 for i in range(0,N+1):
                     self.generateQueues(L-1, N-i, dict)
                     for rq in dict[L-1, N-i]:
-                        nrq = copy.deepcopy(rq)
-                        nrq.append(i)
+                        nrq = (rq)+ (i,)
                         dict[L,N].append(nrq)  
 
                   
@@ -95,11 +75,11 @@ class Non_Stochastic_State_Map(object):
 
     def generateAuthorizedTransitionMatrix(self):
         tm = np.zeros((self.n_states, self.n_states))
-        for i in range(0, self.n_states):
-            for succ in self.stateList[i].guess_successors():
-                i_succ = self.stateList.index(succ)
-                tm[i,i_succ] = 1
-                self.transition_list.append((i,i_succ))
+        for state in self.stateList:
+            for j in range(0, state.get_inventory()+1):
+                succ = self.stateDict[state.tuple[2::]+(j,)]
+                tm[state.index, succ] = 1
+                self.transition_list.append((state.index, succ))
         return tm
 
     def calculateStationaryTransitionMap(self, distribution):
@@ -108,7 +88,7 @@ class Non_Stochastic_State_Map(object):
             self.stateList[i].stationary_lambda = int(1000*distribution.lambda_distribution(self.stateList[i].price))/1000.
             self.stateList[i].stationary_bo_cost = distribution.calculateBackorderCost(distribution.backorder_cost(self.stateList[i].price), self.stateList[i].price, self.stateList[i].get_inventory())
             for j in range(0, self.n_states):
-                self.stationary_transition_map[i][j] = distribution.calculateTransitionProbability(self.stateList[i].price, self.stateList[i], self.stateList[j], self)
+                self.stationary_transition_map[i][j] = distribution.getTransitionProbability(self.stateList[i].price, self.stateList[i], self.stateList[j], self)
 
     def calculateStationaryProbabilities(self):
         if self.stationary_transition_map is not None:

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<ProfilingTarget xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ProjectTarget>
+    <TargetProject>6f431bc5-8616-4c52-9f80-2967a6b7ca7b</TargetProject>
+    <FriendlyName>Revenue Management Project</FriendlyName>
+  </ProjectTarget>
+  <Reports>
+    <Report>
+      <Filename>C:\Users\Sauvage_Antoine\AppData\Local\Temp\Revenue Management Project_20160524.vsp</Filename>
+    </Report>
+  </Reports>
+</ProfilingTarget>

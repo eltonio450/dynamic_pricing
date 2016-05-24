@@ -20,39 +20,19 @@ colors = "bgrcmykw"
 
 
 
+#WARNING: L must be >= 2
 
-if False:
-    MAX_PRICE = 1100
-    MIN_PRICE = 0
-    BACKORDER_FIXED_COST = 200
-    OBSERVATION_PRICE = 500
-    OBSERVED_DEMAND = 1
-    MARKET_SIZE_DEMAND_RATE = 2
-    N_PRICES = 11
-    N_PERIODS = 3
-    N_PARTS = 3
-
-elif False:
-    MAX_PRICE = 1040
-    MIN_PRICE = 0
-    BACKORDER_FIXED_COST = 200
-    OBSERVATION_PRICE = 500
-    OBSERVED_DEMAND = 1
-    MARKET_SIZE_DEMAND_RATE = 2
-    N_PRICES = 26
-    N_PERIODS = 4
-    N_PARTS = 8
-
-else:
-    MAX_PRICE = 1030
-    MIN_PRICE = 300
-    BACKORDER_FIXED_COST = 200
-    OBSERVATION_PRICE = 500
-    OBSERVED_DEMAND = 1
-    MARKET_SIZE_DEMAND_RATE = 2
-    N_PRICES = 50
-    N_PERIODS = 8
-    N_PARTS = 6
+MAX_PRICE = 1000
+MIN_PRICE = 500
+BACKORDER_FIXED_COST = 200
+OBSERVATION_PRICE = 500
+OBSERVED_DEMAND = 1
+MARKET_SIZE_DEMAND_RATE = 2
+N_PRICES = 60
+N_PERIODS = 8
+N_PARTS = 6
+print((MAX_PRICE - MIN_PRICE)/N_PRICES)
+PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
 
 print("Generation of the states...")
 start = time.time()
@@ -63,18 +43,18 @@ print("Generation time: "+ str(end - start))
 
 #print(np.array_repr(G.authorized_transitions_matrix))
 
-
 #if P.DEBUG == "SmallMatrix": 
- #   for item in (G.stateList):
-  #      print(item)
-    #print(np.array_repr(G.authorized_transitions_matrix))
+#    for item in (G.stateList):
+#        print(item)
 
 
-distribution = PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST)
+
+distribution = PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, N_PARTS)
 
 print("Generation of the price -> probability map...")
 start = time.time()
-tms = distribution.generateTransitionMatrices(MIN_PRICE,MAX_PRICE,N_PRICES,G)
+distribution.generateTransitionProbabilities(PRICE_LIST)
+tms = distribution.generateTransitionMatrices(PRICE_LIST,G)
 end = time.time()
 #print(np.array_repr(tms[1,:,:]))
 
@@ -82,7 +62,7 @@ print("Computation time the price -> probability map: "+ str(end - start))
 
 print("Generation of the price -> reward map...")
 start = time.time()
-rms = distribution.generateRewardMatrices(MIN_PRICE,MAX_PRICE,N_PRICES,G)
+rms = distribution.generateRewardMatrices(PRICE_LIST,G)
 end = time.time()
 #print(np.array_repr(rms[1,:,:]))
 
@@ -106,9 +86,9 @@ for i in range(0, len(G.stateList)):
     G.stateList[i].value=test.V[i]
     G.stateList[i].price = test.policy[i]*(MAX_PRICE-MIN_PRICE)/N_PRICES + MIN_PRICE
     
-G.calculateStationaryTransitionMap(distribution)
-G.calculateStationaryProbabilities()
-stationary_transition_map = G.stationary_transition_map
+#G.calculateStationaryTransitionMap(distribution)
+#G.calculateStationaryProbabilities()
+#stationary_transition_map = G.stationary_transition_map
 end = time.time()
 print("Stationary Markov Chain: "+ str(end - start))
 
@@ -123,8 +103,8 @@ for i in range(0, N_PARTS +1):
 for item in G.stateList:
     valueList[item.get_inventory()].append(item.value)
     priceList[item.get_inventory()].append(item.price)
-    print(item)
+    #print(item)
 
-for i in range(0, N_PARTS +1):
-    plt.scatter(valueList[i], priceList[i], c=colors[i])
-plt.show()
+#for i in range(0, N_PARTS):
+#    plt.scatter(valueList[i], priceList[i], c=colors[i])
+#plt.show()

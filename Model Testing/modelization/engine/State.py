@@ -10,9 +10,8 @@ class State:
 
 
 
-    def __init__(self, stock: int, repair_queue: deque, value = 0):
-        self.stock = stock
-        self.repair_queue = repair_queue
+    def __init__(self, tuple, value = 0):
+        self.tuple = tuple
         self.value = value
         self.price = 0
         self.stationary_probability = 0
@@ -23,35 +22,34 @@ class State:
         self.list_predecessors = []
         self.list_successors = []
         
-        self.hash = 0
-        for i in range(0, len(self.repair_queue)):
-            n = self.repair_queue.popleft()
-            self.hash += i*(n)
-            self.repair_queue.append(n)
+
 
 
 
 
     def __eq__(self, other):
         if isinstance(other, State):
-            if self.get_inventory() == other.get_inventory():
-                return self.repair_queue==other.repair_queue  
-            else:
-                return False          
+            return self.tuple==other.tuple    
         else:
             return False
 
     def __ne__(self, other):
         return (not self.__eq__(other))
 
-    def __hash__(self):
+    """def __hash__(self):
         if(isinstance(self, State)):
-            return self.hash
+            value = 0x345678
+            for item in self.tuple:
+                value = eval(hex((int(1000003) * value) & 0xFFFFFFFF)[:-1])
+            value = value ^ len(self.tuple)
+        if value == -1:
+            value = -2
+            return value
         else:
-            return 0
+            return 0 """
 
     def __str__(self):
-        return "N=" + str(self.stock) + ", RQ: " + str(self.repair_queue) + ", V=" + str(int(self.value))+", lam=" + str(self.stationary_lambda) +", p=" + str(int(self.price)) + ", SP=" + str(self.stationary_probability) + ", BO=" + str(int(self.stationary_bo_cost))
+        return "S=" + str(self.tuple) + ", V=" + str(int(self.value))+", lam=" + str(self.stationary_lambda) +", p=" + str(int(self.price)) + ", SP=" + str(self.stationary_probability) + ", BO=" + str(int(self.stationary_bo_cost))
 
 
     def set_successors(self, succList): succList = succList
@@ -70,29 +68,26 @@ class State:
         pass
         
     def get_inventory(self):
-        return self.stock
+        return self.tuple[0]
 
     def get_last_period_sales(self):
-        return self.repair_queue[-1]
+        return self.tuple[-1]
 
-    def get_incoming_stock(self):
-        return self.repair_queue[0]
+    #def guess_successors(self):
+    #    res = []
+    #    for i in range(0,min(P.MAX_PER_WEEK,self.stock)+1):
+    #        new_repair_queue = copy.deepcopy(self.repair_queue)
+    #        new_repair_queue.append(i)
+    #        res.append(State(self.stock + new_repair_queue.popleft() - i , new_repair_queue))
+    #    return res
 
-    def guess_successors(self):
-        res = []
-        for i in range(0,min(P.MAX_PER_WEEK,self.stock)+1):
-            new_repair_queue = copy.deepcopy(self.repair_queue)
-            new_repair_queue.append(i)
-            res.append(State(self.stock + new_repair_queue.popleft() - i , new_repair_queue))
-        return res
-
-    def guess_predecessors(self):
-        res = []
-        for i in range(0,min(P.MAX_PER_WEEK,self.stock)+1):
-            new_repair_queue = copy.deepcopy(self.repair_queue)
-            new_repair_queue.append(i)
-            res.appendleft(State(self.stock + new_repair_queue.pop() - i , new_repair_queue))
-        return res
+    #def guess_predecessors(self):
+    #    res = []
+    #    for i in range(0,min(P.MAX_PER_WEEK,self.stock)+1):
+    #        new_repair_queue = copy.deepcopy(self.repair_queue)
+    #        new_repair_queue.append(i)
+    #        res.appendleft(State(self.stock + new_repair_queue.pop() - i , new_repair_queue))
+    #    return res
 
     def print(self):
         print(str(self))
