@@ -28,9 +28,9 @@ BACKORDER_FIXED_COST = 200
 OBSERVATION_PRICE = 500
 OBSERVED_DEMAND = 1
 MARKET_SIZE_DEMAND_RATE = 2
-N_PRICES = 60
-N_PERIODS = 8
-N_PARTS = 6
+N_PRICES = 20
+N_PERIODS = 6
+N_PARTS = 8
 print((MAX_PRICE - MIN_PRICE)/N_PRICES)
 PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
 
@@ -68,7 +68,7 @@ end = time.time()
 
 print("Computation time for the reward map: "+ str(end - start))
 
-test = mdptoolbox.mdp.PolicyIteration(tms, rms, 0.95)
+test = mdptoolbox.mdp.PolicyIteration(tms, rms, 0.995)
 start = time.time()
 test.run()
 end = time.time()
@@ -103,8 +103,8 @@ for i in range(0, N_PARTS +1):
 for item in G.stateList:
     valueList[item.get_inventory()].append(item.value)
     priceList[item.get_inventory()].append(item.price)
-    #print(item)
 
-#for i in range(0, N_PARTS):
-#    plt.scatter(valueList[i], priceList[i], c=colors[i])
-#plt.show()
+
+for i in range(0, N_PARTS):
+    plt.scatter(valueList[i], priceList[i], c=colors[i])
+plt.show()

@@ -54,25 +54,29 @@ class Distribution(object):
 
     def generateRewardMatrices(self, p_list, map):
         n_states = len(map.stateList)
+        dict = self.generateRewardDict(self.get_backorder_cost(), p_list, self.N_max)
+        #for k in dict.keys():
+        #    print("Cle: " + str(k) + ", Value: " + str(dict.get(k)) + ", L="+str(self.lambda_distribution(k[1]))) 
         rmm = np.zeros((len(p_list), n_states, n_states))
         for i in range(0, len(p_list)):
-            rmm[i,:,:] = self.generateRewardMatrix(p_list[i], map)
+            for j in range(0, n_states):
+                rmm[i,j,:] = np.ones(n_states)*dict[map.stateList[j].get_inventory(), p_list[i]]
         return rmm
 
 
-    def generateRewardMatrix(self, p: int, map):
-        n_states = len(map.stateList)
-        tm = np.zeros((n_states,n_states))
-        for trans in map.transition_list:
-            tm[trans[0],trans[1]] = map.stateList[trans[1]].get_last_period_sales()*p - self.calculateBackorderCost(self.backorder_cost(p), p, map.stateList[trans[0]].get_inventory())
-        return tm
+    #def generateRewardMatrix(self, p: int, map):
+    #    n_states = len(map.stateList)
+    #    tm = np.zeros((n_states,n_states))
+    #    for trans in map.transition_list:
+    #        tm[trans[0],trans[1]] = map.stateList[trans[1]].get_last_period_sales()*p - self.calculateBackorderCost(self.get_backorder_cost()+p, map.stateList[trans[0]].get_inventory())
+    #    return tm
 
 
 
 
     
-    def backorder_cost(self, p):
-        return max(p, self.bfc)
+    def get_backorder_cost(self):
+        return self.bfc
 
 
 """parent class for the Poisson Distribution. Only the children take the price into account: the parent has a fixed lambda"""
@@ -90,11 +94,15 @@ class Poisson(Distribution):
         return math.pow(self.lambda_distribution(p),k) * math.exp(-self.lambda_distribution(p))/math.factorial(k)
 
     """in the case of a poisson distribution, the bo cost is lambda - sum of what we could have sold"""
-    def calculateBackorderCost(self, cost_per_item, p, N):
-        possibly_sold = 0
-        for i in range(0, N+1):
-            possibly_sold += i*self.normalTP[i, p]
-        return cost_per_item * (self.lambda_distribution(p) - possibly_sold)
+    def generateRewardDict(self, backorder_cost, price_list, N_max):
+        res = {}
+        for i in range (0, N_max+1):
+            for p in price_list:
+                possibly_sold = 0
+                for j in range(0, i+1):
+                    possibly_sold += j*self.normalTP[j, p]
+                res[i,p] = p * possibly_sold - backorder_cost * (self.lambda_distribution(p) - possibly_sold)
+        return res
 
 
 

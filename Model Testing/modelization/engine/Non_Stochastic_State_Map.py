@@ -21,15 +21,13 @@ class Non_Stochastic_State_Map(object):
         self.n_states = 0
         self.stateList = []
         self.stateDict = {}
+        
         dictQueues = {}
 
 
-        self.generateQueues(L, N, dictQueues)
+        self.generateTuples(L, N, dictQueues)
         
-        #for q in dictQueues[L, N]:
-        #    print(q)
-
-        for q in dictQueues[L, N]:
+        for q in dictTuples[L, N]:
             self.stateList.append(State(q))
 
         print("All the states have been generated.")
@@ -40,19 +38,14 @@ class Non_Stochastic_State_Map(object):
 
         self.n_states = len(self.stateList)
         print("Generated states: "+ str(self.n_states))
-        
-        #optimisation
-        #for item in self.stateList:
-            #item.index = self.stateList.index(item)
 
-        
-        
         self.stationary_transition_map = None
         self.transition_list = []
         self.authorized_transitions_matrix = self.generateAuthorizedTransitionMatrix()
 
 
-    def generateQueues(self, L, N, dict):
+    """ Fonction auditee""" 
+    def generateTuples(self, L, N, dict):
         if (L,N) not in dict.keys():
             if L == 1:
                 dict[L,N] = [(N,)]
@@ -60,26 +53,17 @@ class Non_Stochastic_State_Map(object):
                 dict[L,N] = []
                 for i in range(0,N+1):
                     self.generateQueues(L-1, N-i, dict)
-                    for rq in dict[L-1, N-i]:
-                        nrq = (rq)+ (i,)
-                        dict[L,N].append(nrq)  
-
-                  
-                
-
-
-
+                    for tuple in dict[L-1, N-i]:
+                        new_tuple = (tuple)+ (i,)
+                        dict[L,N].append(new_tuple)  
         
-
-
-
     def generateAuthorizedTransitionMatrix(self):
         tm = np.zeros((self.n_states, self.n_states))
         for state in self.stateList:
             for j in range(0, state.get_inventory()+1):
-                succ = self.stateDict[state.tuple[2::]+(j,)]
-                tm[state.index, succ] = 1
-                self.transition_list.append((state.index, succ))
+                succ_index = self.stateDict[state.child(j)]
+                tm[state.index, succ_index] = 1
+                self.transition_list.append((state.index, succ_index))
         return tm
 
     def calculateStationaryTransitionMap(self, distribution):
@@ -97,43 +81,7 @@ class Non_Stochastic_State_Map(object):
             for i in range(0, self.n_states):
                 self.stateList[i].stationary_probability = mc.pi[i]
         else:
-            raise("The Stationary Transition Probability map has not neen calculate")
-
-    """Functions related to nx.graph"""
-    def generateGraph(self, L, N):
-        successors_to_be_processed = []   
-        initial_queue = deque()
-
-        """Generation of a (0,0,0,0,0) state"""
-        for i in range(0,L):
-            initial_queue.append(0)
-        initial_state = State(N, initial_queue)
-
-
-        self.map.add_node(initial_state, label=str(initial_state))
-        i = 1
-
-        """Generation of the first successors"""
-        successors_to_be_processed.extend(initial_state.guess_successors())
-           
-        
-        while successors_to_be_processed:
-            succ = successors_to_be_processed.pop()
-            if not self.map.has_node(succ):  
-                successors_to_be_processed.extend(succ.guess_successors())
-                self.map.add_node(succ, label=str(succ))
-
-    """this function links all the state between them, successors and predecessors"""
-    def link_nodes(self):
-        for node in self.map.nodes():
-            for succ in node.guess_successors():
-                self.map.add_edge(node,succ, sales=(node.stock - succ.stock), label=str(node.stock - succ.stock))
-
-
-    
-    
-
-
+            raise("The Stationary Transition Probability map has notbneen calculate")
 
     def stateList(self):
         return self.stateList
