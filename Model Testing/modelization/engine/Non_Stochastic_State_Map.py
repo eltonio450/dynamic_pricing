@@ -8,7 +8,7 @@ import copy
 from discreteMarkovChain import markovChain
 
 
-class Non_Stochastic_State_Map(object):
+class State_Map(object):
     """description of class"""
     """
     Cette classe reflete la carte des etats. 
@@ -81,7 +81,7 @@ class Non_Stochastic_State_Map(object):
             for i in range(0, self.n_states):
                 self.stateList[i].stationary_probability = mc.pi[i]
         else:
-            raise("The Stationary Transition Probability map has notbneen calculate")
+            raise("The Stationary Transition Probability map has not been calculated")
 
     def stateList(self):
         return self.stateList

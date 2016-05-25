@@ -7,7 +7,11 @@ from modelization.engine.State import *
 class Distribution(object):
     """description of class"""
 
-    """Calculates the probability of """
+    """Generates the probability of transition, regarding the distribution.
+    - normalTP(i, p) is the probability to sell i items when the price is p
+    - backorderTP(i, p) is the probabilty of selling i items when the price is p and the inventory is i: it is the probability to have a demand between i and infitnity
+    
+    """
 
     def generateTransitionProbabilities(self, p_list):
         self.normalTP = {}
@@ -55,21 +59,11 @@ class Distribution(object):
     def generateRewardMatrices(self, p_list, map):
         n_states = len(map.stateList)
         dict = self.generateRewardDict(self.get_backorder_cost(), p_list, self.N_max)
-        #for k in dict.keys():
-        #    print("Cle: " + str(k) + ", Value: " + str(dict.get(k)) + ", L="+str(self.lambda_distribution(k[1]))) 
         rmm = np.zeros((len(p_list), n_states, n_states))
         for i in range(0, len(p_list)):
             for j in range(0, n_states):
                 rmm[i,j,:] = np.ones(n_states)*dict[map.stateList[j].get_inventory(), p_list[i]]
         return rmm
-
-
-    #def generateRewardMatrix(self, p: int, map):
-    #    n_states = len(map.stateList)
-    #    tm = np.zeros((n_states,n_states))
-    #    for trans in map.transition_list:
-    #        tm[trans[0],trans[1]] = map.stateList[trans[1]].get_last_period_sales()*p - self.calculateBackorderCost(self.get_backorder_cost()+p, map.stateList[trans[0]].get_inventory())
-    #    return tm
 
 
 

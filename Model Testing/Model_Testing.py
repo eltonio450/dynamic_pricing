@@ -4,7 +4,7 @@ import sys
 
 #sys.path.append('C:\Users\Sauvage_Antoine\Documents\Visual Studio 2015\Projects\Model Testing\Model Testing\') 
 from configuration import parameters as P
-from modelization.engine.Non_Stochastic_State_Map import Non_Stochastic_State_Map
+from modelization.engine.Non_Stochastic_State_Map import State_Map
 from modelization.engine.Distribution import *
 
 from collections import deque
@@ -36,7 +36,7 @@ PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
 
 print("Generation of the states...")
 start = time.time()
-G = Non_Stochastic_State_Map(N_PERIODS, N_PARTS)
+G = State_Map(N_PERIODS, N_PARTS)
 end = time.time()
 print("Generation time: "+ str(end - start))
 
