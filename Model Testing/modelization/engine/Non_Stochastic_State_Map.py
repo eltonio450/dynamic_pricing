@@ -22,10 +22,10 @@ class State_Map(object):
         self.stateList = []
         self.stateDict = {}
         
-        dictQueues = {}
+        dictTuples = {}
 
 
-        self.generateTuples(L, N, dictQueues)
+        self.generateTuples(L, N, dictTuples)
         
         for q in dictTuples[L, N]:
             self.stateList.append(State(q))
@@ -52,7 +52,7 @@ class State_Map(object):
             else:
                 dict[L,N] = []
                 for i in range(0,N+1):
-                    self.generateQueues(L-1, N-i, dict)
+                    self.generateTuples(L-1, N-i, dict)
                     for tuple in dict[L-1, N-i]:
                         new_tuple = (tuple)+ (i,)
                         dict[L,N].append(new_tuple)  

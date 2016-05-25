@@ -33,7 +33,7 @@ class State:
         return self.tuple[-1]
 
     def child(self, sales):
-        if sales <= self.get_inventory:
-            return self.tuple[2::]+(j,)
+        if sales <= self.get_inventory():
+            return self.tuple[2::]+(sales,)
         else:
             raise("Impossible transition")
