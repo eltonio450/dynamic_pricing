@@ -11,7 +11,8 @@ class State:
         self.price = 0
         self.stationary_probability = 0
         self.stationary_lambda = 0
-        self.stationary_bo_cost = 0
+        self.stationary_reward = 0
+        self.stationary_backoorder_cost = 0
         self.index = 0
 
     def __eq__(self, other):
@@ -24,7 +25,7 @@ class State:
         return (not self.__eq__(other))
 
     def __str__(self):
-        return "S=" + str(self.tuple) + ", V=" + str(int(self.value))+", lam=" + str(self.stationary_lambda) +", p=" + str(int(self.price)) + ", SP=" + str(self.stationary_probability) + ", BO=" + str(int(self.stationary_bo_cost))
+        return "S=" + str(self.tuple) + ", V=" + str(int(self.value))+", lam=" + str(self.stationary_lambda) +", p=" + str(int(self.price)) + ", SP=" + str(self.stationary_probability) + ", BO=" + str(int(self.stationary_backoorder_cost))
         
     def get_inventory(self):
         return self.tuple[0]
@@ -32,7 +33,7 @@ class State:
     def get_last_period_sales(self):
         return self.tuple[-1]
 
-    def child(self, sales):
+    def get_child_tuple(self, sales):
         if sales <= self.get_inventory():
             return self.tuple[2::]+(sales,)
         else:

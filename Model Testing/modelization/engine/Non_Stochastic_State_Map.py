@@ -31,6 +31,8 @@ class State_Map(object):
             self.stateList.append(State(q))
 
         print("All the states have been generated.")
+
+        """WARNING: the dictionary only contains a reduced version of the tuple"""
         for i in range(0, len(self.stateList)):
             self.stateList[i].index = i
             self.stateDict[self.stateList[i].tuple[1::]] = i
@@ -61,7 +63,7 @@ class State_Map(object):
         tm = np.zeros((self.n_states, self.n_states))
         for state in self.stateList:
             for j in range(0, state.get_inventory()+1):
-                succ_index = self.stateDict[state.child(j)]
+                succ_index = self.stateDict[state.get_child_tuple(j)]
                 tm[state.index, succ_index] = 1
                 self.transition_list.append((state.index, succ_index))
         return tm
@@ -70,7 +72,7 @@ class State_Map(object):
         self.stationary_transition_map = np.zeros((self.n_states, self.n_states))
         for i in range(0, self.n_states):
             self.stateList[i].stationary_lambda = int(1000*distribution.lambda_distribution(self.stateList[i].price))/1000.
-            self.stateList[i].stationary_bo_cost = distribution.calculateBackorderCost(distribution.backorder_cost(self.stateList[i].price), self.stateList[i].price, self.stateList[i].get_inventory())
+            self.stateList[i].stationary_backoorder_cost = distribution.calculateBackorderCost(distribution.backorder_cost(self.stateList[i].price), self.stateList[i].price, self.stateList[i].get_inventory())
             for j in range(0, self.n_states):
                 self.stationary_transition_map[i][j] = distribution.getTransitionProbability(self.stateList[i].price, self.stateList[i], self.stateList[j], self)
 
