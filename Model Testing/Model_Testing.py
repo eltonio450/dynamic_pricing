@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import time
 import mdptoolbox
 
+from sklearn import linear_model
 
 
 colors = "bgrcmykw"
@@ -23,14 +24,14 @@ colors = "bgrcmykw"
 #WARNING: L must be >= 2
 
 MAX_PRICE = 1000
-MIN_PRICE = 500
+MIN_PRICE = 100
 BACKORDER_FIXED_COST = 200
 OBSERVATION_PRICE = 500
 OBSERVED_DEMAND = 1
 MARKET_SIZE_DEMAND_RATE = 2
-N_PRICES = 20
-N_PERIODS = 4
-N_PARTS = 8
+N_PRICES = 80
+N_PERIODS = 6
+N_PARTS = 6
 print((MAX_PRICE - MIN_PRICE)/N_PRICES)
 PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
 
@@ -39,15 +40,6 @@ start = time.time()
 G = State_Map(N_PERIODS, N_PARTS)
 end = time.time()
 print("Generation time: "+ str(end - start))
-
-
-#print(np.array_repr(G.authorized_transitions_matrix))
-
-#if P.DEBUG == "SmallMatrix": 
-#    for item in (G.stateList):
-#        print(item)
-
-
 
 distribution = PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, N_PARTS)
 
@@ -92,7 +84,7 @@ for i in range(0, len(G.stateList)):
 end = time.time()
 print("Stationary Markov Chain: "+ str(end - start))
 
-#print(np.array_repr(stationary_transition_map))
+
 valueList = []
 priceList = []
 
@@ -105,6 +97,31 @@ for item in G.stateList:
     priceList[item.get_inventory()].append(item.price)
 
 
+clfPrice = linear_model.LinearRegression()
+clfValue = linear_model.LinearRegression()
+X = []
+Y = []
+Z = []
+for item in G.stateList:
+    X.append(list(item.tuple))
+    Y.append(item.price)
+    Z.append(item.value)
+
+clfPrice.fit(X,Y)
+clfValue.fit(X,Z)
+
+#print(clf.coef_)
+
+estPrice = clfPrice.predict(X)
+estValue = clfValue.predict(X)
+
+#print(Y)
+#print(est)
+
+#print(Y-est)
 for i in range(0, N_PARTS):
-    plt.scatter(valueList[i], priceList[i], c=colors[i])
+    #plt.scatter(valueList[i], priceList[i], c=colors[i])
+    plt.scatter(estValue, estPrice)
 plt.show()
+
+

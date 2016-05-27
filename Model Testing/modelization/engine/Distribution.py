@@ -23,8 +23,9 @@ class Distribution(object):
                 if i == 0:
                     self.backorderedTP[i, p] = 1
                 else:
-                    self.backorderedTP[i, p] = self.backorderedTP[i-1, p] - self.probability(i-1, p)
-       
+                    #to avoind rounding issues
+                    self.backorderedTP[i, p] = max(self.backorderedTP[i-1, p] - self.probability(i-1, p), 0)
+
     
                 
 

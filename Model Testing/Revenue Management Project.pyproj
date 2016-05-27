@@ -37,13 +37,13 @@
     <Compile Include="modelization\engine\State.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="modelization\basic_functions.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="modelization\engine\Non_Stochastic_State_Map.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="modelization\engine\__init__.py" />
+    <Compile Include="modelization\Simulation.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="modelization\__init__.py" />
     <Compile Include="modelization\visualization\__init__.py" />
     <Compile Include="configuration\__init__.py" />
@@ -54,7 +54,7 @@
     <Compile Include="configuration\parameters.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="modelization\engine\Strategy.py">
+    <Compile Include="modelization\Strategy.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
