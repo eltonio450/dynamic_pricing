@@ -26,6 +26,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="modelization\Analysis.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="modelization\dassault\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -37,7 +40,7 @@
     <Compile Include="modelization\engine\State.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="modelization\engine\Non_Stochastic_State_Map.py">
+    <Compile Include="modelization\engine\State_Map.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="modelization\engine\__init__.py" />
