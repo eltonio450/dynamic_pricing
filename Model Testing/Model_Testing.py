@@ -24,75 +24,31 @@ colors = "bgrcmykw"
 
 #WARNING: L must be >= 2
 
-MAX_PRICE = 1000
-MIN_PRICE = 100
+MAX_PRICE = 550
+MIN_PRICE = 300
 BACKORDER_FIXED_COST = 10
 OBSERVATION_PRICE = 500
 OBSERVED_DEMAND = 1
 MARKET_SIZE_DEMAND_RATE = 2
-N_PRICES = 80
-N_PERIODS = 5
-N_PARTS = 8
+N_PRICES = 100
+N_PERIODS = 20
+N_PARTS = 3
+MAX_SALES = 3
 print((MAX_PRICE - MIN_PRICE)/N_PRICES)
 PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
 
 
 simu_test = Simulation()
-simu_test.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PERIODS+1, N_PARTS)
-simu_test.setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, N_PARTS))
-simu_test.run()
+simu_test.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, MAX_SALES)
+simu_test.setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+#simu_test.run(True)
 
-G = simu_test.G
-print("Coucou")
+simu_test_bernoulli = Simulation()
+simu_test_bernoulli.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, 1)
+simu_test_bernoulli.setDistribution(BernoulliWithLinearParameter(500, 0.1))
+simu_test_bernoulli.run(True)
 
-print("Generation of the states...")
-start = time.time()
-G = State_Map(N_PERIODS, N_PARTS)
-end = time.time()
-print("Generation time: "+ str(end - start))
-
-distribution = PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, N_PARTS)
-
-print("Generation of the price -> probability map...")
-start = time.time()
-distribution.generateTransitionProbabilities(PRICE_LIST)
-tms = distribution.generateTransitionMatrices(PRICE_LIST,G)
-end = time.time()
-#print(np.array_repr(tms[1,:,:]))
-
-print("Computation time the price -> probability map: "+ str(end - start))
-
-print("Generation of the price -> reward map...")
-start = time.time()
-rms = distribution.generateRewardMatrices(PRICE_LIST,G)
-end = time.time()
-#print(np.array_repr(rms[1,:,:]))
-
-print("Computation time for the reward map: "+ str(end - start))
-
-test = mdptoolbox.mdp.PolicyIteration(tms, rms, 0.99)
-start = time.time()
-test.run()
-end = time.time()
-print("Solver: "+ str(end - start))
-#print(test.V)
-#print(test.policy)
-
-# Calculate the stationary transition map when the best policy is reached.
-
-stationary_transition_map = np.zeros((len(G.stateList),len(G.stateList)))
-
-start = time.time()
-print("Computing the stationary Markov Chain and properties...")
-for i in range(0, len(G.stateList)):
-    G.stateList[i].value=test.V[i]
-    G.stateList[i].price = test.policy[i]*(MAX_PRICE-MIN_PRICE)/N_PRICES + MIN_PRICE
-    
-#G.calculateStationaryTransitionMap(distribution)
-#G.calculateStationaryProbabilities()
-#stationary_transition_map = G.stationary_transition_map
-end = time.time()
-print("Stationary Markov Chain: "+ str(end - start))
+G = simu_test_bernoulli.G
 
 
 valueList = []
@@ -156,7 +112,7 @@ plt.figure(1)
 plt.subplot(121)
 axes = plt.gca()
 for i in range(0, N_PARTS):
-    axes.set_ylim([400, 1100])
+    axes.set_ylim([MIN_PRICE, MAX_PRICE])
     plt.scatter(valueList[i], priceList[i], c=colors[i])
    
 
@@ -166,7 +122,7 @@ plt.figure(1)
 plt.subplot(122)
 axes = plt.gca()
 for i in range(0, N_PARTS):
-    axes.set_ylim([400, 1100])
+    axes.set_ylim([MIN_PRICE, MAX_PRICE])
     plt.scatter(valueListEst[i], priceListEst[i], c=colors[i])
 plt.show()
 
