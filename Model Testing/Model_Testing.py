@@ -24,15 +24,15 @@ colors = "bgrcmykw"
 
 #WARNING: L must be >= 2
 
-MAX_PRICE = 550
-MIN_PRICE = 300
+MAX_PRICE = 2000
+MIN_PRICE = 250
 BACKORDER_FIXED_COST = 10
 OBSERVATION_PRICE = 500
 OBSERVED_DEMAND = 1
 MARKET_SIZE_DEMAND_RATE = 2
 N_PRICES = 100
-N_PERIODS = 20
-N_PARTS = 3
+N_PERIODS = 4
+N_PARTS = 8
 MAX_SALES = 3
 print((MAX_PRICE - MIN_PRICE)/N_PRICES)
 PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
@@ -41,14 +41,15 @@ PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
 simu_test = Simulation()
 simu_test.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, MAX_SALES)
 simu_test.setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
-#simu_test.run(True)
+simu_test.run(True)
+G = simu_test.G
 
 simu_test_bernoulli = Simulation()
 simu_test_bernoulli.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, 1)
-simu_test_bernoulli.setDistribution(BernoulliWithLinearParameter(500, 0.1))
-simu_test_bernoulli.run(True)
+simu_test_bernoulli.setDistribution(BernoulliWithLinearParameter(500, 0.1, 0.3))
+#simu_test_bernoulli.run(True)
 
-G = simu_test_bernoulli.G
+#G = simu_test_bernoulli.G
 
 
 valueList = []
@@ -112,7 +113,7 @@ plt.figure(1)
 plt.subplot(121)
 axes = plt.gca()
 for i in range(0, N_PARTS):
-    axes.set_ylim([MIN_PRICE, MAX_PRICE])
+    #axes.set_ylim([400, 600])
     plt.scatter(valueList[i], priceList[i], c=colors[i])
    
 
@@ -122,7 +123,7 @@ plt.figure(1)
 plt.subplot(122)
 axes = plt.gca()
 for i in range(0, N_PARTS):
-    axes.set_ylim([MIN_PRICE, MAX_PRICE])
+    #axes.set_ylim([400, 600])
     plt.scatter(valueListEst[i], priceListEst[i], c=colors[i])
 plt.show()
 

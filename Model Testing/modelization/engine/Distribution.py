@@ -127,14 +127,14 @@ class Bernoulli(Distribution):
         return res
 
 class BernoulliWithLinearParameter(Bernoulli):
-    def __init__(self, past_price, past_sales):
-        self.p_max = (1-past_sales)*past_price
+    def __init__(self, past_price, past_sales, market_size):
+        self.p_max = past_price/(1-(past_sales/market_size))
         self.N_max = 1
         self.bfc = 100
-        
+        self.market_size = market_size        
 
     def parameter_distribution(self, price):
-        return max(min(1 - float(price)/float(self.p_max), 1), 0)
+        return max(min(self.market_size*(1 - float(price)/float(self.p_max)), 1), 0)
 
 class PoissonWithLinearLambda(Poisson):
     def __init__(self, market_size_lambda, past_price, past_lambda, backoder_fixed_cost, N_max):
