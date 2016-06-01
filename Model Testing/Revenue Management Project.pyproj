@@ -47,6 +47,9 @@
     <Compile Include="modelization\Simulation.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="modelization\visualization\Test.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="modelization\__init__.py" />
     <Compile Include="modelization\visualization\__init__.py" />
     <Compile Include="configuration\__init__.py" />
