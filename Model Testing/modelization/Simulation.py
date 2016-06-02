@@ -61,7 +61,7 @@ class Simulation(object):
         if(self.verbose):print("Stationary Markov Chain: "+ str(end - start))
         self.finished = True
 
-    def setParameters(self, min_price, max_price, n_prices, n_parts, n_periods, max_sales = 0, gamma = 0.99, verbose = False):
+    def setParameters(self, min_price, max_price, n_prices, n_parts, n_periods, max_sales = 0, gamma = 0.95, verbose = False):
         if max_sales is not 0:
             self.max_sales = max_sales
         else:

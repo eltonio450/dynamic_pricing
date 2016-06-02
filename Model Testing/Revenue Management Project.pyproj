@@ -26,6 +26,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="modelization\Analytical_Calculation.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="modelization\Analysis.py">
       <SubType>Code</SubType>
     </Compile>

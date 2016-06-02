@@ -7,6 +7,7 @@ from configuration import parameters as P
 from modelization.engine.State_Map import State_Map
 from modelization.engine.Distribution import *
 from modelization.Simulation import Simulation
+from modelization.Analytical_Calculation import *
 from modelization.visualization.Test import *
 from collections import deque
 import networkx as nx
@@ -26,72 +27,129 @@ colors = "bgrcmykw"
 #WARNING: L must be >= 2
 
 MAX_PRICE = 1100
-MIN_PRICE = 300
+MIN_PRICE = 500
 BACKORDER_FIXED_COST = 10
 OBSERVATION_PRICE = 500
 OBSERVED_DEMAND = 1
 MARKET_SIZE_DEMAND_RATE = 2
-N_PRICES = 200
+N_PRICES = 300
 N_PERIODS = 4
-N_PARTS = 4
+N_PARTS = 5
+N_SIMUS = 3
 MAX_SALES = 10
 print((MAX_PRICE - MIN_PRICE)/N_PRICES)
 PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
 
 
-simu_test = Simulation()
-simu_test.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, MAX_SALES)
-simu_test.setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
-simu_test.run(True)
-G = simu_test.G
+#simu_test = Simulation()
+#simu_test.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, MAX_SALES)
+#simu_test.setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+#simu_test.run(True)
+#G = simu_test.G
+simu = []
+maps = []
+valueLists = []
+priceLists = []
 
-simu_test2 = Simulation()
-simu_test2.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS+3, N_PERIODS+1, MAX_SALES)
-simu_test2.setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
-simu_test2.run(True)
-G2 = simu_test2.G
 
-simu_test_bernoulli = Simulation()
-simu_test_bernoulli.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, 1)
-simu_test_bernoulli.setDistribution(BernoulliWithLinearParameter(500, 0.1, 0.3))
+plt.figure(1)
+for i in range(0, N_SIMUS+1):
+    simu.append(Simulation())
+    simu[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES)
+    simu[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+    simu[i].run(True)
+    res = simu[i].G
+
+    valueLists.append([])
+    priceLists.append([])
+    for item in res.stateList:
+        valueLists[i].append(item.value)
+        priceLists[i].append(item.price)
+    plt.subplot(2, N_SIMUS+1, i+1)
+    plt.ylim([MIN_PRICE, MAX_PRICE])
+    plt.scatter(valueLists[i], priceLists[i], c=colors[i])
+   
+
+
+
+initial_states = []
+H = []
+
+for i in range(0, N_SIMUS+1):
+    initial_states.append((i,))
+    for k in range(0,N_PERIODS):
+        initial_states[i] = initial_states[i] + (0,)
+        #for item in simu[i-1].G.stateList:
+            #print(item)
+    H.append(simu[i].G.stateList[simu[i].G.stateDict[initial_states[i][1::]]].value)
+
+for i in range(0, N_SIMUS+1):
+    print("Initial State: "+ str(initial_states[i]))
+    print("Value: "+ str(H[i]))
+
+simuB = []
+mapsB = []
+valueListsB = []
+priceListsB = []
+
+C = []
+C.append(H[0])
+
+for i in range(1, N_SIMUS + 1):
+    C.append(H[i] - H[i-1])
+
+
+for i in range(0, N_SIMUS+1):
+    simuB.append(Analytical_Calculation_With_Coefficients())
+    simuB[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES)
+    simuB[i].setCoefficients(C)
+    simuB[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+    simuB[i].run(True)
+    res = simuB[i].G
+
+    #for item in res.stateList:
+        #print(item)
+    valueListsB.append([])
+    priceListsB.append([])
+    for item in res.stateList:
+        valueListsB[i].append(item.value)
+        priceListsB[i].append(item.price)
+    plt.subplot(2, N_SIMUS+1, N_SIMUS + i+2)
+    plt.ylim([MIN_PRICE, MAX_PRICE])
+    plt.scatter(valueListsB[i], priceListsB[i], c=colors[i])
+   
+
+   
+
+    
+print(C) 
+for a in simu[N_SIMUS-1].G.stateList:
+    b = simuB[N_SIMUS-1].G.stateList[simuB[N_SIMUS-1].G.stateDict[a.tuple[1::]]]
+    print("V1: "+ str(a.value) + ", V2: " + str(b.value) + ", Diff: "+ str(a.value - b.value))
+
+for a in simu[N_SIMUS-1].G.stateList:
+    print(a)
+
+plt.show()
+
+
+
+#simu_test_bernoulli = Simulation()
+#simu_test_bernoulli.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, 1)
+#simu_test_bernoulli.setDistribution(BernoulliWithLinearParameter(500, 0.1, 0.3))
 #simu_test_bernoulli.run(True)
 #G = simu_test_bernoulli.G
 
-#print("Test Start:")
-#test_domination = TestLemmaDomination(simu_test)
-#test_domination.run()
-#print("Test end")
 
 
 
 
-valueList = []
-priceList = []
-
-valueList2 = []
-priceList2 = []
-
-
-#creation of the lists for the different inventory levels
-for i in range(0, N_PARTS +1):
-    valueList.append([])
-    priceList.append([])
-
-for i in range(0, N_PARTS +4):
-    valueList2.append([])
-    priceList2.append([])
-
-#lists fill in
-for item in G.stateList:
-    valueList[item.get_inventory()].append(item.value)
-    priceList[item.get_inventory()].append(item.price)
-
-for item in G2.stateList:
-    valueList2[item.get_inventory()].append(item.value)
-    priceList2[item.get_inventory()].append(item.price)
 
 
 
+
+
+"""
 clfPrice = linear_model.LinearRegression()
 clfValue = linear_model.LinearRegression()
 X = []
@@ -131,24 +189,4 @@ for i in range(0, N_PARTS +1):
 for item in X:
     valueListEst[item[0]].append(estValue[X.index(item)])
     priceListEst[item[0]].append(estPrice[X.index(item)])
-
-
-#print(Y-est)
-plt.figure(1)
-plt.subplot(121)
-axes = plt.gca()
-for i in range(0, N_PARTS):
-    axes.set_ylim([100, 1000])
-    plt.scatter(valueList[i], priceList[i], c=colors[i])
-   
-
-
-plt.figure(1)
-
-plt.subplot(122)
-axes = plt.gca()
-for i in range(0, N_PARTS):
-    axes.set_ylim([100, 1000])
-    plt.scatter(valueList2[i], priceList2[i], c=colors[i])
-plt.show()
-
+"""

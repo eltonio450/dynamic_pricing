@@ -60,7 +60,7 @@ class Distribution(object):
     """Generates the reward matrices. rmm[i,j,k] corresponds to the reward, going from state j to state k, with price set up at i""" 
     def generateRewardMatrices(self, p_list, map):
         n_states = len(map.stateList)
-        dict = self.generateRewardDict(self.get_backorder_cost(), p_list)
+        dict = self.generateRewardDict(p_list)
         rmm = np.zeros((len(p_list), n_states, n_states))
         for i in range(0, len(p_list)):
             for j in range(0, n_states):
@@ -93,14 +93,14 @@ class Poisson(Distribution):
     """The reward dictionnary corresponds to a dictionnary of the expected reward, regardless of the transition.
     --> dict[inventory, p] correspond to our expectated revenue if we have n parts in our inventory and we set up the price to p.
     All the parts that we sell above inventory (or n_max by the way) are considered as backordered."""
-    def generateRewardDict(self, backorder_cost, price_list):
+    def generateRewardDict(self, price_list):
         res = {}
         for i in range (0, self.N_max+1):
             for p in price_list:
                 possibly_sold = 0
                 for j in range(0, i+1):
                     possibly_sold += j*self.normalTP[j, p]
-                res[i,p] = p * possibly_sold - backorder_cost * (self.lambda_distribution(p) - possibly_sold)
+                res[i,p] = p * possibly_sold - self.get_backorder_cost() * (self.lambda_distribution(p) - possibly_sold)
         return res
 
 

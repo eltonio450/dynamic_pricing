@@ -38,3 +38,9 @@ class State:
             return self.tuple[2::]+(sales,)
         else:
             raise("Impossible transition")
+
+    def get_children_reduced_tuples(self, max_sales):
+        res = []
+        for i in range(0, min(max_sales +1, self.get_inventory()+1)):
+            res.append(self.get_child_tuple(i))
+        return res
