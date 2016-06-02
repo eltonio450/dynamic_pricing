@@ -17,7 +17,8 @@ class State_Map(object):
     """
 
     
-    def __init__(self, L=10, N=5):
+    def __init__(self, max_sales, L=10, N=5):
+        self.max_sales = max_sales
         self.n_states = 0
         self.stateList = []
         self.stateDict = {}
@@ -53,7 +54,7 @@ class State_Map(object):
                 dict[L,N] = [(N,)]
             else:
                 dict[L,N] = []
-                for i in range(0,N+1):
+                for i in range(0,min(N+1, self.max_sales+1)):
                     self.generateTuples(L-1, N-i, dict)
                     for tuple in dict[L-1, N-i]:
                         new_tuple = (tuple)+ (i,)
@@ -62,7 +63,7 @@ class State_Map(object):
     def generateAuthorizedTransitionMatrix(self):
         tm = np.zeros((self.n_states, self.n_states))
         for state in self.stateList:
-            for j in range(0, state.get_inventory()+1):
+            for j in range(0, min(state.get_inventory(), self.max_sales)+1):
                 succ_index = self.stateDict[state.get_child_tuple(j)]
                 tm[state.index, succ_index] = 1
                 self.transition_list.append((state.index, succ_index))

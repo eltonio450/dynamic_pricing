@@ -8,3 +8,5 @@ class Strategy(object):
     def run():
         pass
 
+
+
