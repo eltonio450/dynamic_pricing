@@ -32,9 +32,6 @@
     <Compile Include="modelization\Analysis.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="modelization\dassault\__init__.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="modelization\engine\custom_build\__init__.py" />
     <Compile Include="modelization\engine\Distribution.py">
       <SubType>Code</SubType>
@@ -68,13 +65,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="modelization\dassault\" />
     <Folder Include="modelization\engine\" />
     <Folder Include="modelization\engine\mdp_tools\" />
     <Folder Include="modelization\engine\custom_build\" />
     <Folder Include="modelization\visualization\" />
     <Folder Include="configuration\" />
-    <Folder Include="test\" />
     <Folder Include="doc\" />
     <Folder Include="modelization\" />
   </ItemGroup>
