@@ -119,15 +119,15 @@ class Bernoulli(Distribution):
         else:
             return self.parameter_distribution(price)
 
-    def generateRewardDict(self, backorder_cost, price_list):
+    def generateRewardDict(self, price_list):
         res = {}
         for p in price_list:            
-            res[0,p] = - backorder_cost * (self.backorderedTP[0,p] - self.normalTP[0, p]) #forces p = p_max if inventory = 0
+            res[0,p] = - self.get_backorder_cost() * (self.backorderedTP[0,p] - self.normalTP[0, p]) #forces p = p_max if inventory = 0
             res[1,p] = p*self.normalTP[1,p]
         return res
 
 class BernoulliWithLinearParameter(Bernoulli):
-    def __init__(self, past_price, past_sales, market_size):
+    def __init__(self, market_size, past_price, past_sales):
         self.p_max = past_price/(1-(past_sales/market_size))
         self.N_max = 1
         self.bfc = 100
@@ -135,6 +135,9 @@ class BernoulliWithLinearParameter(Bernoulli):
 
     def parameter_distribution(self, price):
         return max(min(self.market_size*(1 - float(price)/float(self.p_max)), 1), 0)
+
+    def solveOptimalPrice(self, value):
+        pass
 
 class PoissonWithLinearLambda(Poisson):
     def __init__(self, market_size_lambda, past_price, past_lambda, backoder_fixed_cost, N_max):

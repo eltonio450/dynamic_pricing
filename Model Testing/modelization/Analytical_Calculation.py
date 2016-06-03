@@ -60,21 +60,40 @@ class Analytical_Calculation_With_Coefficients(Analytical_Calculation):
     def setCoefficients(self, H):
         self.H = H
 
+    def setInitialValue(self, value):
+        self.initial_value = value
     def calculateBestPrice(self, s1):
         pass
                            
     def calculateValues(self):
-        for item in self.G.stateList:
-            value = self.H[0]
-            i = 1 #premiere piece
-            j = 0 #premiere coordonnes du tuple
-            while i <= self.n_parts:
-                for k in range(0,item.tuple[j]):
-                    value += self.H[i]*math.pow(self.gamma,j)
-                    i+=1
-                j+=1  
-                      
-            item.value = value  
+        if(self.n_parts != 0):
+            B = sum(self.H[0:self.n_parts+1])
+            for item in self.G.stateList:
+                j = 0 #premiere coordonnes du tuple
+                t = 0
+                value = 0
+
+                i=1
+                while i <= self.n_parts:
+                    for k in range(0,item.tuple[j]):
+                        value += self.H[i]*math.pow(self.gamma,j)
+                        i+=1
+                    j+=1  
+                item.value = value
+
+                #mean
+                """ 
+                k = 0
+                i = 1
+                while i <= self.n_parts:
+                    t += k*item.tuple[k]
+                    i+=item.tuple[k]
+                    k+=1
+                print("B: " +str(B) + ", Gamma: " + str(self.gamma) +", AVG: " + str(float(t)/self.n_parts) + ", Value: "+ str(self.gamma**(float(t)/self.n_parts)))
+                item.value = B*self.gamma**(float(t)/self.n_parts) """ 
+        else:
+            for item in self.G.stateList:
+                item.value =0
     
     def calculatePrices(self):
         self.distribution.generateTransitionProbabilities(self.PRICE_LIST)
@@ -90,7 +109,7 @@ class Analytical_Calculation_With_Coefficients(Analytical_Calculation):
             nextsList.append(self.G.stateList[self.G.stateDict[i]])
         earnings = {}
         for p in self.PRICE_LIST:
-            earnings[p] = self.rewardDict[s1.get_inventory(), p]
+            earnings[p] = self.rewardDict[min(s1.get_inventory(),self.max_sales), p]
             for s in nextsList:
                 earnings[p] = earnings[p] + self.gamma*s.value*self.distribution.getTransitionProbability(p, s1, s, self.G)
         

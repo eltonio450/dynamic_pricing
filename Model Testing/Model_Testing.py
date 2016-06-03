@@ -27,16 +27,17 @@ colors = "bgrcmykw"
 #WARNING: L must be >= 2
 
 MAX_PRICE = 1100
-MIN_PRICE = 500
+MIN_PRICE = 300
 BACKORDER_FIXED_COST = 10
 OBSERVATION_PRICE = 500
-OBSERVED_DEMAND = 1
-MARKET_SIZE_DEMAND_RATE = 2
-N_PRICES = 300
+OBSERVED_DEMAND = 0.5
+MARKET_SIZE_DEMAND_RATE = 1
+N_PRICES = 200
 N_PERIODS = 4
 N_PARTS = 5
-N_SIMUS = 3
+N_SIMUS = 4
 MAX_SALES = 10
+GAMMA = 0.8
 print((MAX_PRICE - MIN_PRICE)/N_PRICES)
 PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
 
@@ -55,7 +56,7 @@ priceLists = []
 plt.figure(1)
 for i in range(0, N_SIMUS+1):
     simu.append(Simulation())
-    simu[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES)
+    simu[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
     simu[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
     simu[i].run(True)
     res = simu[i].G
@@ -79,8 +80,6 @@ for i in range(0, N_SIMUS+1):
     initial_states.append((i,))
     for k in range(0,N_PERIODS):
         initial_states[i] = initial_states[i] + (0,)
-        #for item in simu[i-1].G.stateList:
-            #print(item)
     H.append(simu[i].G.stateList[simu[i].G.stateDict[initial_states[i][1::]]].value)
 
 for i in range(0, N_SIMUS+1):
@@ -94,15 +93,17 @@ priceListsB = []
 
 C = []
 C.append(H[0])
-
-for i in range(1, N_SIMUS + 1):
+for i in range(1, N_SIMUS+1):
     C.append(H[i] - H[i-1])
+print(C)
 
 
 for i in range(0, N_SIMUS+1):
     simuB.append(Analytical_Calculation_With_Coefficients())
-    simuB[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES)
+    simuB[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
+    
     simuB[i].setCoefficients(C)
+
     simuB[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
     simuB[i].run(True)
     res = simuB[i].G
@@ -122,23 +123,15 @@ for i in range(0, N_SIMUS+1):
    
 
     
-print(C) 
+
 for a in simu[N_SIMUS-1].G.stateList:
     b = simuB[N_SIMUS-1].G.stateList[simuB[N_SIMUS-1].G.stateDict[a.tuple[1::]]]
-    print("V1: "+ str(a.value) + ", V2: " + str(b.value) + ", Diff: "+ str(a.value - b.value))
+    print("State: " + str(simu[N_SIMUS-1].G.stateList[simuB[N_SIMUS-1].G.stateDict[a.tuple[1::]]].tuple) + ", V1: "+ str(round(a.value,0)) + ", V2: " + str(round(b.value,0)) + ", Diff: "+ str(round(a.value - b.value,0)))
 
 for a in simu[N_SIMUS-1].G.stateList:
     print(a)
 
 plt.show()
-
-
-
-#simu_test_bernoulli = Simulation()
-#simu_test_bernoulli.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, 1)
-#simu_test_bernoulli.setDistribution(BernoulliWithLinearParameter(500, 0.1, 0.3))
-#simu_test_bernoulli.run(True)
-#G = simu_test_bernoulli.G
 
 
 
