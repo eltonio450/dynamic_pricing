@@ -1,5 +1,4 @@
 from collections import deque
-from configuration import parameters as P
 import copy
 
 class State:
@@ -44,3 +43,21 @@ class State:
         for i in range(0, min(max_sales +1, self.get_inventory()+1)):
             res.append(self.get_child_tuple(i))
         return res
+
+    def get_first_return_time(self):
+        if sum(self.tuple) == 0:
+            return 0
+        else:
+            i=0
+            while True:
+                if self.tuple[i] != 0 :
+                    return i
+                i+=1
+    
+    #test to be written
+    def get_shifted_tuple(self, j):
+        return (sum(self.tuple[0:j+1]),) + self.tuple[j+1:] + j*(0,)
+
+
+    
+

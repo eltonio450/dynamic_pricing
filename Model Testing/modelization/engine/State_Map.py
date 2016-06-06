@@ -92,6 +92,12 @@ class State_Map(object):
     def print(self):
         for item in self.stateList:
             item.print()
+
+    def getStateFromTuple(self, tuple):
+        return self.stateList[self.stateDict[tuple[1:]]]
+    def getStateFromReducedTuple(self, tuple):
+        return self.stateList[self.stateDict[tuple]]
+
     
     def is_authorized(self, s1, s2):
         return (self.authorized_transitions_matrix[s1.index,s2.index] == 1)

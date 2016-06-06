@@ -3,11 +3,10 @@ import time
 import sys
 
 #sys.path.append('C:\Users\Sauvage_Antoine\Documents\Visual Studio 2015\Projects\Model Testing\Model Testing\') 
-from configuration import parameters as P
 from modelization.engine.State_Map import State_Map
 from modelization.engine.Distribution import *
 from modelization.Simulation import Simulation
-from modelization.Analytical_Calculation import *
+from modelization.Analytical_Calculation_All_States import *
 from modelization.visualization.Test import *
 from collections import deque
 import networkx as nx
@@ -32,12 +31,12 @@ BACKORDER_FIXED_COST = 10
 OBSERVATION_PRICE = 500
 OBSERVED_DEMAND = 0.5
 MARKET_SIZE_DEMAND_RATE = 1
-N_PRICES = 200
+N_PRICES = 100
 N_PERIODS = 4
 N_PARTS = 5
-N_SIMUS = 4
+N_SIMUS = 3
 MAX_SALES = 10
-GAMMA = 0.8
+GAMMA = 0.95
 print((MAX_PRICE - MIN_PRICE)/N_PRICES)
 PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
 
@@ -52,13 +51,16 @@ maps = []
 valueLists = []
 priceLists = []
 
+approx_initiale_constante = {}
+approx_initiale_exp = {}
 
 plt.figure(1)
 for i in range(0, N_SIMUS+1):
+    print("Exact simulation " + str(i) + "...")
     simu.append(Simulation())
     simu[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
     simu[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
-    simu[i].run(True)
+    simu[i].run(False)
     res = simu[i].G
 
     valueLists.append([])
@@ -66,12 +68,10 @@ for i in range(0, N_SIMUS+1):
     for item in res.stateList:
         valueLists[i].append(item.value)
         priceLists[i].append(item.price)
-    plt.subplot(2, N_SIMUS+1, i+1)
+    plt.subplot(4, N_SIMUS+1, i+1)
     plt.ylim([MIN_PRICE, MAX_PRICE])
     plt.scatter(valueLists[i], priceLists[i], c=colors[i])
    
-
-
 
 initial_states = []
 H = []
@@ -98,40 +98,96 @@ for i in range(1, N_SIMUS+1):
 print(C)
 
 
-for i in range(0, N_SIMUS+1):
-    simuB.append(Analytical_Calculation_With_Coefficients())
-    simuB[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
-    
-    simuB[i].setCoefficients(C)
 
+plt.figure(1)
+for i in range(0, N_SIMUS+1):
+    print("Exponential approximation " + str(i) + "...")
+    simuB.append(Exponential_Approximation())
+    simuB[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
+    simuB[i].setCoefficients(C)
     simuB[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
-    simuB[i].run(True)
+    simuB[i].generateStateMap()
+    simuB[i].run(False)
     res = simuB[i].G
 
-    #for item in res.stateList:
-        #print(item)
+    approx_initiale_exp[i] = {}
+    approx_initiale_constante[i] = {}
+
     valueListsB.append([])
     priceListsB.append([])
     for item in res.stateList:
+        approx_initiale_exp[i][item.index] = item.value
+        approx_initiale_constante[i][item.index] = 0
         valueListsB[i].append(item.value)
         priceListsB[i].append(item.price)
-    plt.subplot(2, N_SIMUS+1, N_SIMUS + i+2)
+    plt.subplot(4, N_SIMUS+1, N_SIMUS + i+2)
     plt.ylim([MIN_PRICE, MAX_PRICE])
     plt.scatter(valueListsB[i], priceListsB[i], c=colors[i])
    
+#Generation des approximations
 
-   
+print("Debut de la reapproximation...")
+simuC = []
+mapsC = []
+valueListsC = []
+priceListsC = []
+for i in range(0, N_SIMUS+1):
+    print("Reapproximation " + str(i) + "...")
+    simuC.append(Continuous_Approximation())
+    simuC[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
+    simuC[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+    simuC[i].generateStateMap()
+    simuC[i].setDepth(3)
+    simuC[i].setApproximateValues(approx_initiale_exp[i])
+    simuC[i].run(True)
 
+    res = simuC[i].G
+    valueListsC.append([])
+    priceListsC.append([])
+    for item in res.stateList:
+        valueListsC[i].append(item.value)
+        priceListsC[i].append(item.price)
+    plt.subplot(4, N_SIMUS+1, 2*N_SIMUS + 2 + i + 1)
+    plt.ylim([MIN_PRICE, MAX_PRICE])
+    plt.scatter(valueListsC[i], priceListsC[i], c=colors[i])
     
 
-for a in simu[N_SIMUS-1].G.stateList:
-    b = simuB[N_SIMUS-1].G.stateList[simuB[N_SIMUS-1].G.stateDict[a.tuple[1::]]]
-    print("State: " + str(simu[N_SIMUS-1].G.stateList[simuB[N_SIMUS-1].G.stateDict[a.tuple[1::]]].tuple) + ", V1: "+ str(round(a.value,0)) + ", V2: " + str(round(b.value,0)) + ", Diff: "+ str(round(a.value - b.value,0)))
+print("Debut de la reapproximation a partir de V=0...")
+simuD = []
+mapsD = []
+valueListsD = []
+priceListsD = []
+for i in range(0, N_SIMUS+1):
+    print("Reapproximation " + str(i) + "...")
+    simuD.append(Continuous_Approximation())
+    simuD[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
+    simuD[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+    simuD[i].generateStateMap()
+    simuD[i].setDepth(3)
+    simuD[i].setApproximateValues(approx_initiale_constante[i])
+    simuD[i].run(True)
 
-for a in simu[N_SIMUS-1].G.stateList:
-    print(a)
+    res = simuD[i].G
+    valueListsD.append([])
+    priceListsD.append([])
+    for item in res.stateList:
+        valueListsD[i].append(item.value)
+        priceListsD[i].append(item.price)
+    plt.subplot(4, N_SIMUS+1, 3*N_SIMUS + 3 + i + 1)
+    plt.ylim([MIN_PRICE, MAX_PRICE])
+    plt.scatter(valueListsD[i], priceListsD[i], c=colors[i])
+    
+
+for a in simu[N_SIMUS].G.stateList:
+    b = simuB[N_SIMUS].G.stateList[simuB[N_SIMUS].G.stateDict[a.tuple[1::]]]
+    c = simuC[N_SIMUS].G.stateList[simuC[N_SIMUS].G.stateDict[a.tuple[1::]]]
+    print("State: " + str(simu[N_SIMUS].G.stateList[simuB[N_SIMUS].G.stateDict[a.tuple[1::]]].tuple) + ", V1: "+ str(round(a.value,0)) + ", V2: " + str(round(b.value,0)) + ", V3: " + str(round(c.value,0)) + ", Diff1: "+ str(round(a.value - b.value,0))+ ", Diff2: "+ str(round(a.value - c.value,0)))
+
+
 
 plt.show()
+
+
 
 
 

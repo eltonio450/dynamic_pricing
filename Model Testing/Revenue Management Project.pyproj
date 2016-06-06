@@ -16,6 +16,8 @@
     <IsWindowsApplication>True</IsWindowsApplication>
     <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
     <InterpreterVersion>3.5</InterpreterVersion>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -26,13 +28,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="modelization\Analytical_Calculation.py">
+    <Compile Include="modelization\Analytical_Calculation_All_States.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="modelization\Analysis.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="modelization\engine\custom_build\__init__.py" />
     <Compile Include="modelization\engine\Distribution.py">
       <SubType>Code</SubType>
     </Compile>
@@ -52,24 +50,12 @@
     </Compile>
     <Compile Include="modelization\__init__.py" />
     <Compile Include="modelization\visualization\__init__.py" />
-    <Compile Include="configuration\__init__.py" />
     <Compile Include="Model_Testing.py" />
-    <Compile Include="constantes.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="configuration\parameters.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="modelization\Strategy.py">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="modelization\engine\" />
     <Folder Include="modelization\engine\mdp_tools\" />
-    <Folder Include="modelization\engine\custom_build\" />
     <Folder Include="modelization\visualization\" />
-    <Folder Include="configuration\" />
     <Folder Include="doc\" />
     <Folder Include="modelization\" />
   </ItemGroup>
