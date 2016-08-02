@@ -14,7 +14,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import mdptoolbox
-
+import pandas as pd
+import seaborn as sns
 from sklearn import linear_model
 from sklearn.metrics import r2_score
 
@@ -25,176 +26,208 @@ colors = "bgrcmykw"
 
 #WARNING: L must be >= 2
 
-MAX_PRICE = 1100
-MIN_PRICE = 300
-BACKORDER_FIXED_COST = 10
+MAX_PRICE = 1001
+MIN_PRICE = 200
+BACKORDER_FIXED_COST = 0
 OBSERVATION_PRICE = 500
 OBSERVED_DEMAND = 0.5
 MARKET_SIZE_DEMAND_RATE = 1
-N_PRICES = 100
-N_PERIODS = 4
-N_PARTS = 5
-N_SIMUS = 3
-MAX_SALES = 10
+N_PRICES = 500
+N_PERIODS = 6
+N_PARTS = 4
+N_SIMUS = 1
+MAX_SALES = 1
 GAMMA = 0.95
-print((MAX_PRICE - MIN_PRICE)/N_PRICES)
+#print((MAX_PRICE - MIN_PRICE)/N_PRICES)
 PRICE_LIST = range(MIN_PRICE, MAX_PRICE, int((MAX_PRICE - MIN_PRICE)/N_PRICES))
-
 
 #simu_test = Simulation()
 #simu_test.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, MAX_SALES)
 #simu_test.setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
 #simu_test.run(True)
 #G = simu_test.G
-simu = []
-maps = []
-valueLists = []
-priceLists = []
 
-approx_initiale_constante = {}
-approx_initiale_exp = {}
 
-plt.figure(1)
-for i in range(0, N_SIMUS+1):
-    print("Exact simulation " + str(i) + "...")
-    simu.append(Simulation())
-    simu[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
-    simu[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
-    simu[i].run(False)
-    res = simu[i].G
+""" Comparison between exact method and approximate method"""
+if False:
+    simu = []
+    maps = []
+    valueLists = []
+    priceLists = []
 
-    valueLists.append([])
-    priceLists.append([])
-    for item in res.stateList:
-        valueLists[i].append(item.value)
-        priceLists[i].append(item.price)
-    plt.subplot(4, N_SIMUS+1, i+1)
-    plt.ylim([MIN_PRICE, MAX_PRICE])
-    plt.scatter(valueLists[i], priceLists[i], c=colors[i])
+    approx_initiale_constante = {}
+    approx_initiale_exp = {}
+    plt.figure(1)
+    for i in range(0, N_SIMUS+1):
+        print("Exact simulation " + str(i) + "...")
+        simu.append(Simulation())
+        simu[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
+        simu[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+        simu[i].run(False)
+        res = simu[i].G
+
+        valueLists.append([])
+        priceLists.append([])
+        for item in res.stateList:
+            valueLists[i].append(item.value)
+            priceLists[i].append(item.price)
+        plt.subplot(4, N_SIMUS+1, i+1)
+        plt.ylim([MIN_PRICE, MAX_PRICE])
+        plt.scatter(valueLists[i], priceLists[i], c=colors[i])
    
 
-initial_states = []
-H = []
+    initial_states = []
+    H = []
 
-for i in range(0, N_SIMUS+1):
-    initial_states.append((i,))
-    for k in range(0,N_PERIODS):
-        initial_states[i] = initial_states[i] + (0,)
-    H.append(simu[i].G.stateList[simu[i].G.stateDict[initial_states[i][1::]]].value)
+    for i in range(0, N_SIMUS+1):
+        initial_states.append((i,))
+        for k in range(0,N_PERIODS):
+            initial_states[i] = initial_states[i] + (0,)
+        H.append(simu[i].G.stateList[simu[i].G.stateDict[initial_states[i][1::]]].value)
 
-for i in range(0, N_SIMUS+1):
-    print("Initial State: "+ str(initial_states[i]))
-    print("Value: "+ str(H[i]))
+    for i in range(0, N_SIMUS+1):
+        print("Initial State: "+ str(initial_states[i]))
+        print("Value: "+ str(H[i]))
 
-simuB = []
-mapsB = []
-valueListsB = []
-priceListsB = []
+    simuB = []
+    mapsB = []
+    valueListsB = []
+    priceListsB = []
 
-C = []
-C.append(H[0])
-for i in range(1, N_SIMUS+1):
-    C.append(H[i] - H[i-1])
-print(C)
+    C = []
+    C.append(H[0])
+    for i in range(1, N_SIMUS+1):
+        C.append(H[i] - H[i-1])
+    print(C)
 
 
 
-plt.figure(1)
-for i in range(0, N_SIMUS+1):
-    print("Exponential approximation " + str(i) + "...")
-    simuB.append(Exponential_Approximation())
-    simuB[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
-    simuB[i].setCoefficients(C)
-    simuB[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
-    simuB[i].generateStateMap()
-    simuB[i].run(False)
-    res = simuB[i].G
+    plt.figure(1)
+    for i in range(0, N_SIMUS+1):
+        print("Exponential approximation " + str(i) + "...")
+        simuB.append(Exponential_Approximation())
+        simuB[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
+        simuB[i].setCoefficients(C)
+        simuB[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+        simuB[i].generateStateMap()
+        simuB[i].run(False)
+        res = simuB[i].G
 
-    approx_initiale_exp[i] = {}
-    approx_initiale_constante[i] = {}
+        approx_initiale_exp[i] = {}
+        approx_initiale_constante[i] = {}
 
-    valueListsB.append([])
-    priceListsB.append([])
-    for item in res.stateList:
-        approx_initiale_exp[i][item.index] = item.value
-        approx_initiale_constante[i][item.index] = 0
-        valueListsB[i].append(item.value)
-        priceListsB[i].append(item.price)
-    plt.subplot(4, N_SIMUS+1, N_SIMUS + i+2)
-    plt.ylim([MIN_PRICE, MAX_PRICE])
-    plt.scatter(valueListsB[i], priceListsB[i], c=colors[i])
+        valueListsB.append([])
+        priceListsB.append([])
+        for item in res.stateList:
+            approx_initiale_exp[i][item.index] = item.value
+            approx_initiale_constante[i][item.index] = 0
+            valueListsB[i].append(item.value)
+            priceListsB[i].append(item.price)
+        plt.subplot(4, N_SIMUS+1, N_SIMUS + i+2)
+        plt.ylim([MIN_PRICE, MAX_PRICE])
+        plt.scatter(valueListsB[i], priceListsB[i], c=colors[i])
    
-#Generation des approximations
+    #Generation des approximations
 
-print("Debut de la reapproximation...")
-simuC = []
-mapsC = []
-valueListsC = []
-priceListsC = []
-for i in range(0, N_SIMUS+1):
-    print("Reapproximation " + str(i) + "...")
-    simuC.append(Continuous_Approximation())
-    simuC[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
-    simuC[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
-    simuC[i].generateStateMap()
-    simuC[i].setDepth(3)
-    simuC[i].setApproximateValues(approx_initiale_exp[i])
-    simuC[i].run(True)
+    print("Debut de la reapproximation...")
+    simuC = []
+    mapsC = []
+    valueListsC = []
+    priceListsC = []
+    for i in range(0, N_SIMUS+1):
+        print("Reapproximation " + str(i) + "...")
+        simuC.append(Continuous_Approximation())
+        simuC[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
+        simuC[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+        simuC[i].generateStateMap()
+        simuC[i].setDepth(3)
+        simuC[i].setApproximateValues(approx_initiale_exp[i])
+        simuC[i].run(True)
 
-    res = simuC[i].G
-    valueListsC.append([])
-    priceListsC.append([])
-    for item in res.stateList:
-        valueListsC[i].append(item.value)
-        priceListsC[i].append(item.price)
-    plt.subplot(4, N_SIMUS+1, 2*N_SIMUS + 2 + i + 1)
-    plt.ylim([MIN_PRICE, MAX_PRICE])
-    plt.scatter(valueListsC[i], priceListsC[i], c=colors[i])
+        res = simuC[i].G
+        valueListsC.append([])
+        priceListsC.append([])
+        for item in res.stateList:
+            valueListsC[i].append(item.value)
+            priceListsC[i].append(item.price)
+        plt.subplot(4, N_SIMUS+1, 2*N_SIMUS + 2 + i + 1)
+        plt.ylim([MIN_PRICE, MAX_PRICE])
+        plt.scatter(valueListsC[i], priceListsC[i], c=colors[i])
     
 
-print("Debut de la reapproximation a partir de V=0...")
-simuD = []
-mapsD = []
-valueListsD = []
-priceListsD = []
-for i in range(0, N_SIMUS+1):
-    print("Reapproximation " + str(i) + "...")
-    simuD.append(Continuous_Approximation())
-    simuD[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
-    simuD[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
-    simuD[i].generateStateMap()
-    simuD[i].setDepth(3)
-    simuD[i].setApproximateValues(approx_initiale_constante[i])
-    simuD[i].run(True)
+    print("Debut de la reapproximation a partir de V=0...")
+    simuD = []
+    mapsD = []
+    valueListsD = []
+    priceListsD = []
+    for i in range(0, N_SIMUS+1):
+        print("Reapproximation " + str(i) + "...")
+        simuD.append(Continuous_Approximation())
+        simuD[i].setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, i, N_PERIODS+1, MAX_SALES, GAMMA)
+        simuD[i].setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+        simuD[i].generateStateMap()
+        simuD[i].setDepth(3)
+        simuD[i].setApproximateValues(approx_initiale_constante[i])
+        simuD[i].run(True)
 
-    res = simuD[i].G
-    valueListsD.append([])
-    priceListsD.append([])
-    for item in res.stateList:
-        valueListsD[i].append(item.value)
-        priceListsD[i].append(item.price)
-    plt.subplot(4, N_SIMUS+1, 3*N_SIMUS + 3 + i + 1)
-    plt.ylim([MIN_PRICE, MAX_PRICE])
-    plt.scatter(valueListsD[i], priceListsD[i], c=colors[i])
+        res = simuD[i].G
+        valueListsD.append([])
+        priceListsD.append([])
+        for item in res.stateList:
+            valueListsD[i].append(item.value)
+            priceListsD[i].append(item.price)
+        plt.subplot(4, N_SIMUS+1, 3*N_SIMUS + 3 + i + 1)
+        plt.ylim([MIN_PRICE, MAX_PRICE])
+        plt.scatter(valueListsD[i], priceListsD[i], c=colors[i])
     
 
-for a in simu[N_SIMUS].G.stateList:
-    b = simuB[N_SIMUS].G.stateList[simuB[N_SIMUS].G.stateDict[a.tuple[1::]]]
-    c = simuC[N_SIMUS].G.stateList[simuC[N_SIMUS].G.stateDict[a.tuple[1::]]]
-    print("State: " + str(simu[N_SIMUS].G.stateList[simuB[N_SIMUS].G.stateDict[a.tuple[1::]]].tuple) + ", V1: "+ str(round(a.value,0)) + ", V2: " + str(round(b.value,0)) + ", V3: " + str(round(c.value,0)) + ", Diff1: "+ str(round(a.value - b.value,0))+ ", Diff2: "+ str(round(a.value - c.value,0)))
+    for a in simu[N_SIMUS].G.stateList:
+        b = simuB[N_SIMUS].G.stateList[simuB[N_SIMUS].G.stateDict[a.tuple[1::]]]
+        c = simuC[N_SIMUS].G.stateList[simuC[N_SIMUS].G.stateDict[a.tuple[1::]]]
+        print("State: " + str(simu[N_SIMUS].G.stateList[simuB[N_SIMUS].G.stateDict[a.tuple[1::]]].tuple) + ", V1: "+ str(round(a.value,0)) + ", V2: " + str(round(b.value,0)) + ", V3: " + str(round(c.value,0)) + ", Diff1: "+ str(round(a.value - b.value,0))+ ", Diff2: "+ str(round(a.value - c.value,0)))
 
 
 
-plt.show()
+    plt.show()
 
 
 
+"""Test of the approximation method"""
+
+sns.set(style="ticks")
+if False:
+    print("Test of the approximation method: WIP")
+    print("Exact simulation...")
+    simu = Simulation()
+    simu.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, MAX_SALES, GAMMA)
+    simu.setDistribution(PoissonWithLinearLambda(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND, BACKORDER_FIXED_COST, MAX_SALES))
+    simu.run(False)
+    res = simu.G
+
+    couples = []
+    df = []
+    for item in res.stateList:
+        couples.append([item.tuple, item.value,item.price])
+    df = pd.DataFrame(couples, columns=["State", "Value", "Price"])
+    print(df)
+    sns.jointplot(x="Value", y="Price", data=df);
+
+    
+    #sns.jointplot(x="Value", y = "Price", data=df)
+    
 
 
+    plt.show()
 
-
-
-
+if True:
+    distribution = BernoulliWithLinearParameter(MARKET_SIZE_DEMAND_RATE, OBSERVATION_PRICE, OBSERVED_DEMAND)
+    simu = Simulation()
+    simu.setParameters(MIN_PRICE, MAX_PRICE, N_PRICES, N_PARTS, N_PERIODS+1, MAX_SALES, GAMMA)
+    simu.setDistribution(distribution)
+    simu.run(False)
+    res = simu.G
+    for item in res.stateList:
+        print(item)
 
 
 

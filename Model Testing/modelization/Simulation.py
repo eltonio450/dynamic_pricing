@@ -27,6 +27,8 @@ class Simulation(object):
         if(self.verbose):print("Generation of the price -> probability map...")
         start = time.time()
         PRICE_LIST = range(self.min_price, self.max_price, int((self.max_price - self.min_price)/self.n_prices))
+        for item in PRICE_LIST:
+            print(item)
         self.distribution.generateTransitionProbabilities(PRICE_LIST)
         tms = self.distribution.generateTransitionMatrices(PRICE_LIST, self.G)
         end = time.time()
@@ -41,24 +43,23 @@ class Simulation(object):
         optimalPolicy = mdptoolbox.mdp.PolicyIteration(tms, rms, self.gamma)
         start = time.time()
         optimalPolicy.run()
+        for i in range(0, len(self.G.stateList)):
+            self.G.stateList[i].value=optimalPolicy.V[i]
+            self.G.stateList[i].price = PRICE_LIST[optimalPolicy.policy[i]]
+    
         end = time.time()
         if(self.verbose):print("Solver: "+ str(end - start))
 
-        # Calculate the stationary transition map when the best policy is reached.
+        #self.stationary_transition_map = np.zeros((len(self.G.stateList),len(self.G.stateList)))
 
-        self.stationary_transition_map = np.zeros((len(self.G.stateList),len(self.G.stateList)))
-
-        start = time.time()
-        if(self.verbose): print("Computing the stationary Markov Chain and properties...")
-        for i in range(0, len(self.G.stateList)):
-            self.G.stateList[i].value=optimalPolicy.V[i]
-            self.G.stateList[i].price = optimalPolicy.policy[i]*(self.max_price-self.min_price)/self.n_prices + self.min_price
-    
+        #start = time.time()
+        #if(self.verbose): print("Computing the stationary Markov Chain and properties...")
+        
         #G.calculateStationaryTransitionMap(distribution)
         #G.calculateStationaryProbabilities()
         #stationary_transition_map = G.stationary_transition_map
-        end = time.time()
-        if(self.verbose):print("Stationary Markov Chain: "+ str(end - start))
+        #end = time.time()
+        #if(self.verbose):print("Stationary Markov Chain: "+ str(end - start))
         self.finished = True
 
     def setParameters(self, min_price, max_price, n_prices, n_parts, n_periods, max_sales = 0, gamma = 0.95, verbose = False):
@@ -82,17 +83,30 @@ class Simulation(object):
         self.ready = self.parametersReady
 
 
-    def getStates():
-        pass
+    def isFinished(self):
+        return self.finished
 
-    def getValues():
-        pass
 
-    def getPrices():
-        pass
+    def setParameters(self, min_price, max_price, n_prices, n_parts, n_periods, max_sales = 0, gamma = 0.95, verbose = False):
+        if max_sales is not 0:
+            self.max_sales = max_sales
+        else:
+            self.max_sales = n_parts
+        self.gamma = gamma
+        self.min_price = min_price
+        self.max_price = max_price
+        self.n_prices = n_prices
+        self.n_parts = n_parts
+        self.n_periods = n_periods
+        self.parametersReady = True
+        self.verbose = verbose
+        self.ready = self.distributionReady
 
-    def getStationaryProbabilities():
-        pass
+    def setDistribution(self, distribution):
+        self.distribution = distribution
+        self.distributionReady = True
+        self.ready = self.parametersReady
+
 
     def isFinished(self):
         return self.finished
